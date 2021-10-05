@@ -1,1 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
+
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.content {
+	width: 600px;
+	margin: auto;
+}
+
+@media screen and (max-width: 992px) {
+	.content {
+		width: 100%;
+	}
+}

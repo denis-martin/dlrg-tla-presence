@@ -1,0 +1,51 @@
+
+@keyframes fadeoutgreen {
+    from {  background-color: green; }
+    to {  background-color: transparent; }
+}
+ 
+@-webkit-keyframes fadeoutgreen {
+    from {  background-color: green; }
+    to {  background-color: transparent; }
+}
+
+.fadeoutgreen {
+    background-color: green;
+    animation: fadeoutgreen 3000ms;
+    -webkit-animation: fadeoutgreen 3000ms;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fadeoutyellow {
+    from {  background-color: yellow; }
+    to {  background-color: transparent; }
+}
+ 
+@-webkit-keyframes fadeoutyellow {
+    from {  background-color: yellow; }
+    to {  background-color: transparent; }
+}
+
+.fadeoutyellow {
+    background-color: yellow;
+    animation: fadeoutyellow 3000ms;
+    -webkit-animation: fadeoutyellow 3000ms;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fadeoutred {
+    from {  background-color: red; }
+    to {  background-color: transparent; }
+}
+ 
+@-webkit-keyframes fadeoutred {
+    from {  background-color: red; }
+    to {  background-color: transparent; }
+}
+
+.fadeoutred {
+    background-color: red;
+    animation: fadeoutred 3000ms;
+    -webkit-animation: fadeoutred 3000ms;
+    animation-fill-mode: forwards;
+}
