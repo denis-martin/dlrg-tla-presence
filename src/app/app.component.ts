@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
+import { NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
-interface LocalRecord {
-	date: string,
-	pId: number,
-	presence: number,
-	name?: string
-}
+import { DataService, LocalPresenceRecord } from './data.service';
+import { ModalEditComponent } from './modals/modal-edit/modal-edit.component';
 
 @Component({
 	selector: 'app-root',
@@ -17,7 +14,6 @@ export class AppComponent
 	version = '0.1';
 	needLogin = true;
 	needDataKey = true;
-	records: Array<LocalRecord> = [];
 
 	doFadeGreen = false;
 	doFadeYellow = false;
@@ -29,26 +25,13 @@ export class AppComponent
 	name?: string = undefined;
 	presence = 1; // 1: present, 2: excused
 
-	constructor () {
+	editModal?: NgbModalRef;
+
+	constructor (public data: DataService, private modalService: NgbModal)
+	{
+		data.load();
 		const now = new Date();
 		this.date = String(now.getFullYear()) + '-' + String(now.getMonth()+1).padStart(2, "0") + '-' + String(now.getDate()).padStart(2, "0");
-		console.log(this.date, now, now.getDay(), now.getMonth(), now.getFullYear());
-	}
-
-	add(date: string, pId: number, presence: number): LocalRecord
-	{
-		let name: string | undefined = undefined;
-		// TODO: fetch name from list
-
-		const record: LocalRecord = {
-			date: date,
-			pId: pId,
-			presence: presence,
-			name: name
-		};
-		this.records.push(record);
-
-		return record;
 	}
 
 	submit(): void
@@ -57,8 +40,10 @@ export class AppComponent
 			return;
 		}
 
-		const r = this.add(this.date, this.pId, this.presence);
-		this.name = r.name || "Unbekannt";
+		this.data.add(this.date, this.pId, this.presence)
+			.then((r) => {
+				this.name = r.name || "Unbekannt";
+			});
 		//navigator.notification.beep(1);
 
 		this.pId = undefined;
@@ -88,6 +73,32 @@ export class AppComponent
 				document.getElementById("pId")?.focus();		
 			//}
 		}, 0);
+	}
+
+	private getDismissReason(reason: ModalDismissReasons): string {
+        if (reason === ModalDismissReasons.ESC) {
+            return 'by pressing ESC';
+        } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+            return 'by clicking on a backdrop';
+        } else {
+            return `with: ${reason}`;
+        }
+	}
+
+	edit(r: LocalPresenceRecord): void
+	{
+		this.editModal = this.modalService.open(ModalEditComponent, ModalEditComponent.modalOptions);
+		this.editModal.componentInstance.obj = r;
+		this.editModal.result.then((result) => {
+			console.info("edit(): " + `Closed with: ${result}`);
+			if (result == 'delete') {
+				this.data.delete(r);
+			} else {
+				this.data.update(r);
+			}
+        }, (reason) => {
+			console.warn("edit(): " + `Dismissed ${this.getDismissReason(reason)}`);
+        });
 	}
 
 	sync(): void {

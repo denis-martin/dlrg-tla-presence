@@ -1,0 +1,19 @@
+<div class="modal-header">
+    <h3 class="modal-title" id="modal-title">{{objClone!.date | date:"dd.MM.yyyy"}}: {{objClone!.name}} ({{objClone!.pId}})</h3>
+</div>
+<div class="modal-body" id="modal-body">
+    <form>
+        <label for="dlgpresence">Anwesenheit</label>
+        <select class="form-control" id="presence" name="presence" [(ngModel)]="objClone!.presence">
+            <option [ngValue]="0">Nicht anwesend</option>
+            <option [ngValue]="1">Anwesend</option>
+            <option [ngValue]="2">Entschuldigt</option>
+        </select>
+    </form>
+</div>
+<div class="modal-footer">
+    <div style="float: left">
+        <button *ngIf="obj" class="btn btn-danger" type="button" (click)="delete()">Löschen</button>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="ok()">Übernehmen</button>
+</div>

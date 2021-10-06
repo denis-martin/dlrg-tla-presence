@@ -5,12 +5,15 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AppComponent } from './app.component';
+import { DataService } from './data.service';
 
 import { environment } from '../environments/environment';
+import { ModalEditComponent } from './modals/modal-edit/modal-edit.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ModalEditComponent
   ],
   imports: [
     BrowserModule,
@@ -23,7 +26,7 @@ import { environment } from '../environments/environment';
     }),
     NgbModule,
   ],
-  providers: [],
+  providers: [DataService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
