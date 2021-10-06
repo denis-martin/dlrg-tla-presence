@@ -1,12 +1,13 @@
+<nav class="navbar mb-2">
+	<div class="navbar-brand">
+		<img src="assets/images/logo.svg" class="logo">
+	</div>
+	<div class="navbar-item mr-1">
+		<span class="navbar-button"><i class="fas fa-sync"></i></span>
+	</div>
+</nav>
 <div class="container">
-	<nav class="navbar pl-0 pr-0">
-		<div class="navbar-brand">
-			DLRG Ettlingen e.V. &ndash; Anwesenheit <span style="font-size: 75%">v{{version}}</span>
-		</div>
-		<div class="navbar-item">
-			<span style="font-size: 125%"><i class="fas fa-sync"></i></span>
-		</div>
-	</nav>
+	
 	<form (ngSubmit)="submit()" #presenceForm="ngForm">
 		<div class="row pb-3">
 			<div class="col-sm-12">
