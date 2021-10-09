@@ -1,6 +1,6 @@
 {
-  "name": "torg-presence",
-  "short_name": "torg-presence",
+  "name": "DLRG Anwesenheit",
+  "short_name": "DLRG Anwesenheit",
   "theme_color": "#1976d2",
   "background_color": "#fafafa",
   "display": "standalone",
