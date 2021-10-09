@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgbModalOptions, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { LocalPresenceRecord } from 'src/app/data.service';
+import { DataService, LocalPresenceRecord } from 'src/app/data.service';
 
 @Component({
 	selector: 'app-modal-edit',
@@ -17,7 +17,7 @@ export class ModalEditComponent implements OnInit
 		size: "md"
 	}
 
-	constructor(public activeModal: NgbActiveModal) { }
+	constructor(public data: DataService, private activeModal: NgbActiveModal) { }
 
 	ngOnInit(): void
 	{

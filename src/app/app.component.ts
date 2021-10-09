@@ -2,7 +2,9 @@ import { Component } from '@angular/core';
 import { NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
 import { DataService, LocalPresenceRecord } from './data.service';
+import { ModalAuthComponent } from './modals/modal-auth/modal-auth.component';
 import { ModalEditComponent } from './modals/modal-edit/modal-edit.component';
+import { ModalSyncComponent } from './modals/modal-sync/modal-sync.component';
 
 @Component({
 	selector: 'app-root',
@@ -12,23 +14,27 @@ import { ModalEditComponent } from './modals/modal-edit/modal-edit.component';
 export class AppComponent 
 {
 	version = '0.1';
-	needLogin = true;
-	needDataKey = true;
 
 	doFadeGreen = false;
 	doFadeYellow = false;
 	doFadeRed = false;
 	timeout: any = 0;
 
-	date = "1970-01-01";
+	date = "1970-01-02";
 	pId?: number = undefined;
 	name?: string = undefined;
 	presence = 1; // 1: present, 2: excused
 
 	editModal?: NgbModalRef;
+	authModal?: NgbModalRef;
+	syncModal?: NgbModalRef;
+
+	notificationSound: any;
 
 	constructor (public data: DataService, private modalService: NgbModal)
 	{
+		this.notificationSound = new Audio("assets/sounds/success.mp3");
+		
 		data.load();
 		const now = new Date();
 		this.date = String(now.getFullYear()) + '-' + String(now.getMonth()+1).padStart(2, "0") + '-' + String(now.getDate()).padStart(2, "0");
@@ -42,9 +48,9 @@ export class AppComponent
 
 		this.data.add(this.date, this.pId, this.presence)
 			.then((r) => {
-				this.name = r.name || "Unbekannt";
+				this.name = this.data.participants[r.pId]?.name || "Unbekannt";
 			});
-		//navigator.notification.beep(1);
+		this.notificationSound.play();
 
 		this.pId = undefined;
 
@@ -63,27 +69,42 @@ export class AppComponent
 			}, 3000);
 		}, 20);
 
-		setTimeout(() => { this.refocus(); }, 0);
+		this.refocus();
 	}
 
 	refocus(): void
 	{
 		setTimeout(() => {
-			//if (!DlrgScanner.uiAuthOpened && !DlrgScanner.uiEditOpened && !DlrgScanner.uiSyncOpened) {
-				document.getElementById("pId")?.focus();		
-			//}
+			const el = document.getElementById("pId");
+			if (el != undefined && this.editModal == undefined && this.authModal == undefined && this.syncModal == undefined) {
+				el.focus();
+			}
 		}, 0);
 	}
 
-	private getDismissReason(reason: ModalDismissReasons): string {
-        if (reason === ModalDismissReasons.ESC) {
-            return 'by pressing ESC';
-        } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
-            return 'by clicking on a backdrop';
-        } else {
-            return `with: ${reason}`;
-        }
+	keyEvent(event: KeyboardEvent): void
+	{
+		if (event.key !== undefined) {
+			if (event.key == "Tab") {
+				this.submit();
+			}
+		
+		} else if (event.keyCode !== undefined) {
+			if (event.keyCode == 9) {
+				this.submit();
+			}
+		}
 	}
+
+	// private getDismissReason(reason: ModalDismissReasons): string {
+    //     if (reason === ModalDismissReasons.ESC) {
+    //         return 'by pressing ESC';
+    //     } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+    //         return 'by clicking on a backdrop';
+    //     } else {
+    //         return `with: ${reason}`;
+    //     }
+	// }
 
 	edit(r: LocalPresenceRecord): void
 	{
@@ -96,12 +117,49 @@ export class AppComponent
 			} else {
 				this.data.update(r);
 			}
+			this.editModal = undefined;
         }, (reason) => {
-			console.warn("edit(): " + `Dismissed ${this.getDismissReason(reason)}`);
+			//console.warn("edit(): " + `Dismissed ${this.getDismissReason(reason)}`);
+			this.editModal = undefined;
         });
 	}
 
-	sync(): void {
-		console.log("NYI: sync()");
+	auth(): void
+	{
+		this.authModal = this.modalService.open(ModalAuthComponent, ModalAuthComponent.modalOptions);
+		this.authModal.result.then((result) => {
+			console.info("auth(): " + `Closed with: ${result}`);
+			this.doSync();
+			this.authModal = undefined;
+		}, (reason) => {
+			//console.warn("auth(): " + `Dismissed ${this.getDismissReason(reason)}`);
+			this.authModal = undefined;
+		});
+	}
+
+	prepareSync(): void 
+	{
+		this.data.checkLogin()
+			.subscribe(() => {
+				if (this.data.needDataKey) {
+					this.auth();
+				} else {
+					this.doSync();
+				}
+			}, () => {
+				this.auth();
+			});
+	}
+
+	doSync(): void
+	{
+		this.syncModal = this.modalService.open(ModalSyncComponent, ModalSyncComponent.modalOptions);
+		this.syncModal.result.then((result) => {
+			console.info("doSync(): " + `Closed with: ${result}`);
+			this.syncModal = undefined;
+		}, (reason) => {
+			//console.warn("doSync(): " + `Dismissed ${this.getDismissReason(reason)}`);
+			this.syncModal = undefined;
+		});
 	}
 }

@@ -1,0 +1,49 @@
+<div class="modal-header">
+	<h3 class="modal-title" id="modal-title">Synchronisieren</h3>
+</div>
+<div class="modal-body" id="modal-body">
+	<p>
+		<span *ngIf="!data.needLogin" class="fas fa-check fa-fw"></span>
+		<span *ngIf="data.needLogin" class="fas fa-times fa-fw"></span>
+		Anmelden
+	</p>
+	<p>
+		<span *ngIf="!data.statusUpload" class="fas fa-sync fa-fw"></span>
+		<span *ngIf="data.statusUpload=='waiting'" class="fas fa-sync fa-fw icon-refresh-animate"></span>
+		<span *ngIf="data.statusUpload=='ok' && data.uploadErrorCount==0" class="fas fa-check fa-fw"></span>
+		<span *ngIf="data.statusUpload=='ok' && data.uploadErrorCount>0 && data.uploadSuccessCount>0" class="fas fa-exclamation-triangle fa-fw"></span>
+		<span *ngIf="data.statusUpload=='failed'" class="fas fa-times fa-fw"></span>
+		Daten hochladen<span *ngIf="data.uploadSuccessCount || data.uploadErrorCount">:
+			{{data.uploadSuccessCount}} ok<span *ngIf="data.uploadErrorCount">, {{data.uploadErrorCount}} fehlgeschlagen</span>
+		</span>
+	</p>
+	<p *ngIf="!data.needDataKey">
+		<span *ngIf="!statusDataSync" class="fas fa-sync fa-fw"></span>
+		<span *ngIf="statusDataSync=='waiting'" class="fas fa-sync fa-fw icon-refresh-animate"></span>
+		<span *ngIf="statusDataSync=='ok'" class="fas fa-check fa-fw"></span>
+		<span *ngIf="statusDataSync=='failed'" class="fas fa-times fa-fw" title="{{ dataSyncError }}"></span>
+		Teilnehmernamen aktualisieren
+	</p>
+	<p>
+		<span *ngIf="!statusUpdate" class="fas fa-sync fa-fw"></span>
+		<span *ngIf="statusUpdate=='waiting'" class="fas fa-sync fa-fw icon-refresh-animate"></span>
+		<span *ngIf="statusUpdate=='ok' && !data.swUpdateAvailable" class="fas fa-check fa-fw"></span>
+		<span *ngIf="statusUpdate=='ok' && data.swUpdateAvailable" class="fas fa-download fa-fw"></span>
+		<span *ngIf="statusUpdate=='failed'" class="fas fa-times fa-fw" title="{{ updateError }}"></span>
+		<span *ngIf="statusUpdate!='ok' && !data.swUpdateAvailable"> Nach Updates suchen</span>
+		<span *ngIf="statusUpdate=='ok' && !data.swUpdateAvailable"> App ist aktuell</span>
+		<span *ngIf="data.swUpdateAvailable"> Aktualisierung verfügbar, App wird im Anschluss aktualisiert</span>
+	</p>
+	<p *ngIf="data.statusUpload=='ok' && data.uploadSuccessCount>0">
+		Erfolgreich synchronisierte Einträge wurden aus der Liste entfernt.
+	</p>
+</div>
+<div class="modal-footer">
+	<div style="float: left">
+		<span *ngIf="errorCode" style="color: red"><span class="fas fa-times"></span> Server-Fehler ({{errorCode}})</span>
+	</div>
+	<button *ngIf="!done" class="btn btn-primary" type="button" (click)="sync()">Synchronisieren</button>
+	<button *ngIf="!done" class="btn btn-warning" type="button" (click)="cancel()">Abbrechen</button>
+	<button *ngIf="done && data.swUpdateAvailable" class="btn btn-primary" type="button" (click)="update()">Aktualisieren</button>
+	<button *ngIf="done && !data.swUpdateAvailable" class="btn btn-secondary" type="button" (click)="ok()">Schließen</button>
+</div>

@@ -1,0 +1,33 @@
+<form (submit)="ok()">
+	<div class="modal-header">
+		<h3 class="modal-title" id="modal-title">Anmelden</h3>
+	</div>
+	<div class="modal-body" id="modal-body">
+		<div *ngIf="data.needLogin">
+			<div class="form-group">
+				<label for="passphraseInput">Bitte stelle sicher, dass du mit dem Internet verbunden bist, und melde dich an:</label>
+				<input type="password" class="form-control" id="passphraseInput" name="passphraseInput" placeholder="Passwort" 
+					[(ngModel)]="passphrase">
+			</div>
+		</div>
+		<div *ngIf="!data.needLogin && data.needDataKey">
+			<div class="form-group">
+				<label for="dataKeyInput">Bitte gib den Datenschlüssel ein:</label>
+				<input type="password" class="form-control" id="dataKeyInput" name="dataKeyInput" placeholder="Datenschlüssel" 
+					[(ngModel)]="dataKey">
+				<p class="mt-2">Der Datenschlüssel ist nur erforderlich, wenn die Teilnehmernamen neu synchronisiert werden sollen.</p>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-warning mr-auto" type="button" (click)="ok(true)" *ngIf="!data.needLogin && data.needDataKey">Überspringen</button>
+		<div>
+			<span *ngIf="authSuccess" style="color: green" class="mr-1"><span class="fas fa-check"></span> Anmeldung </span>
+			<span *ngIf="authFailed" style="color: red" class="mr-1"><span class="fas fa-times"></span> Anmeldung </span>
+			<span *ngIf="decFailed" style="color: red" class="mr-1"><span class="fas fa-times"></span> Datenschlüssel </span>
+			<span *ngIf="serverFailure" style="color: red" class="mr-1"><span class="fas fa-times"></span> Server-Fehler ({{serverFailure}}) </span>
+		</div>
+		<span *ngIf="thinking" class="fas fa-sync icon-refresh-animate"></span>
+		<button class="btn btn-primary" type="submit">OK</button>
+	</div>
+</form>
