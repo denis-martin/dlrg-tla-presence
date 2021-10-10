@@ -118,9 +118,11 @@ export class AppComponent
 				this.data.update(r);
 			}
 			this.editModal = undefined;
+			this.refocus();
         }, (reason) => {
 			//console.warn("edit(): " + `Dismissed ${this.getDismissReason(reason)}`);
 			this.editModal = undefined;
+			this.refocus();
         });
 	}
 
@@ -131,9 +133,11 @@ export class AppComponent
 			console.info("auth(): " + `Closed with: ${result}`);
 			this.doSync();
 			this.authModal = undefined;
+			this.refocus();
 		}, (reason) => {
 			//console.warn("auth(): " + `Dismissed ${this.getDismissReason(reason)}`);
 			this.authModal = undefined;
+			this.refocus();
 		});
 	}
 
@@ -157,9 +161,11 @@ export class AppComponent
 		this.syncModal.result.then((result) => {
 			console.info("doSync(): " + `Closed with: ${result}`);
 			this.syncModal = undefined;
+			this.refocus();
 		}, (reason) => {
 			//console.warn("doSync(): " + `Dismissed ${this.getDismissReason(reason)}`);
 			this.syncModal = undefined;
+			this.refocus();
 		});
 	}
 }
