@@ -13,6 +13,18 @@ export class ModalEditComponent implements OnInit
 	obj?: LocalPresenceRecord;
 	objClone?: LocalPresenceRecord;
 
+	get payed(): boolean {
+		return this.data.records.length > 0 && !!this.data.participants[this.data.records[0].pId]?.chargePayedAt;
+	}
+
+	get healthDeclared(): boolean {
+		return this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.healthDeclared == 1;
+	}
+
+	get covid19Vac(): boolean {
+		return this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.covid19Vac == 1;
+	}
+
 	static readonly modalOptions: NgbModalOptions = {
 		size: "md"
 	}

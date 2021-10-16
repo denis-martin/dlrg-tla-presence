@@ -168,4 +168,34 @@ export class AppComponent
 			this.refocus();
 		});
 	}
+
+	getClassPayed(): Record<string, boolean>
+	{
+		const result: Record<string, boolean> = {
+			'no': !!this.name && this.data.records.length > 0 && !this.data.participants[this.data.records[0].pId]?.chargePayedAt, 
+			'yes': !!this.name && this.data.records.length > 0 && !!this.data.participants[this.data.records[0].pId]?.chargePayedAt,
+			'unknown': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.chargePayedAt == undefined
+		}
+		return result;
+	}
+
+	getClassHealthDeclared(): Record<string, boolean>
+	{
+		const result: Record<string, boolean> = {
+			'no': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.healthDeclared == 0, 
+			'yes': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.healthDeclared == 1, 
+			'unknown': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.healthDeclared == undefined
+		}
+		return result;
+	}
+
+	getClassCovid19Vac(): Record<string, boolean>
+	{
+		const result: Record<string, boolean> = {
+			'no': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.covid19Vac == 0, 
+			'yes': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.covid19Vac == 1, 
+			'unknown': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.covid19Vac == undefined
+		}
+		return result;
+	}
 }

@@ -1,14 +1,47 @@
 <div class="modal-header">
-    <h3 class="modal-title" id="modal-title">{{objClone!.date | date:"dd.MM.yyyy"}}: {{ data.participants[objClone!.pId] }} ({{objClone!.pId}})</h3>
+    <h3 class="modal-title" id="modal-title">{{objClone!.date | date:"dd.MM.yyyy"}}: {{ data.participants[objClone!.pId]?.name }} ({{objClone!.pId}})</h3>
 </div>
 <div class="modal-body" id="modal-body">
     <form>
-        <label for="dlgpresence">Anwesenheit</label>
-        <select class="form-control" id="presence" name="presence" [(ngModel)]="objClone!.presence">
-            <option [ngValue]="0">Nicht anwesend</option>
-            <option [ngValue]="1">Anwesend</option>
-            <option [ngValue]="2">Entschuldigt</option>
-        </select>
+        <div class="row mb-3">
+            <div class="col-sm-12">
+                <label for="dlgpresence">Anwesenheit</label>
+                <select class="form-control" id="presence" name="presence" [(ngModel)]="objClone!.presence">
+                    <option [ngValue]="0">Nicht anwesend</option>
+                    <option [ngValue]="1">Anwesend</option>
+                    <option [ngValue]="2">Entschuldigt</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" [ngModel]="payed" id="payed" name="payed" disabled>
+                    <label class="form-check-label" for="payed">
+                        Kurs-/Saisongebühr bezahlt
+                    </label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" [ngModel]="healthDeclared" id="healthDeclared" name="healthDeclared" disabled>
+                    <label class="form-check-label" for="healthDeclared">
+                        Gesundheitserklärung
+                    </label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" [ngModel]="covid19Vac" id="covid19Vac" name="covid19Vac" disabled>
+                    <label class="form-check-label" for="covid19Vac">
+                        COVID-19: geimpft/genesen
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" [(ngModel)]="objClone!.covid19Tested" id="covid19Tested" name="covid19Tested">
+                    <label class="form-check-label" for="covid19Tested">
+                        COVID-19: negativ getestet
+                    </label>
+                </div>
+            </div>
+        </div>
     </form>
 </div>
 <div class="modal-footer">

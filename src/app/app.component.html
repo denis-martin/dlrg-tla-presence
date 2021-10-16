@@ -12,7 +12,7 @@
 		<div class="row pb-3">
 			<div class="col-sm-12">
 				<div>
-					<label for="name">Datum:</label><br>
+					<label for="name">Datum<span *ngIf="data.seasonName"> ({{ data.seasonName }})</span>:</label><br>
 					<input type="date" id="date" name="date" class="form-control" [(ngModel)]="date">
 				</div>
 			</div>
@@ -30,18 +30,24 @@
 			</div>
 		</div>
 		<div class="row pb-3">
-			<div class="col-sm-5 mb-1">
-				<div>
-					<!-- <label for="pId">Teilnehmernummer:</label><br> -->
-					<input type="number" id="pId" name="pId" placeholder="Teilnehmernummer" class="form-control form-control-large" 
-						[(ngModel)]="pId" (blur)="refocus()" (keydown)="keyEvent($event)"> <!-- ng-keydown="keyEvent($event)" ng-blur="refocus()" /> -->
-				</div>
+			<div class="col-sm-4 mb-3">
+				<!-- <label for="pId">Teilnehmernummer:</label><br> -->
+				<input type="number" id="pId" name="pId" placeholder="Teilnehmernummer" class="form-control" 
+					[(ngModel)]="pId" (blur)="refocus()" (keydown)="keyEvent($event)"> <!-- ng-keydown="keyEvent($event)" ng-blur="refocus()" /> -->
 			</div>
-			<div class="col-sm-7 mb-1">
-				<div>
-					<!-- <label for="name">Name:</label><br> -->
-					<div id="name" class="form-control" style="border: 0" [ngClass]="{'fadeoutgreen': doFadeGreen, 'fadeoutyellow': doFadeYellow, 'fadeoutred': doFadeRed}">
+			<div class="col-sm-8 mb-1">
+				<!-- <label for="name">Name:</label><br> -->
+				<div class="input-group mb-3">
+					<div id="name" class="form-control" [ngClass]="{'fadeoutgreen': doFadeGreen, 'fadeoutyellow': doFadeYellow, 'fadeoutred': doFadeRed}">
 						{{name}}
+					</div>
+					<div class="input-group-append">
+						<div class="input-group-text"><i class="fas fa-fw fa-euro-sign"
+							[ngClass]="getClassPayed()"></i></div>
+						<div class="input-group-text"><i class="fas fa-fw fa-heartbeat" 
+							[ngClass]="getClassHealthDeclared()"></i></div>
+						<div class="input-group-text"><i class="fas fa-fw fa-virus"
+							[ngClass]="getClassCovid19Vac()"></i></div>
 					</div>
 				</div>
 			</div>
@@ -51,17 +57,21 @@
 				<table id="data" style="width:100%">
 					<thead>
 						<tr>
-							<th>Datum</th><th>Name</th><th>Anw.</th>
+							<th>Datum</th>
+							<th>Name</th>
+							<th title="Anwesenheit" class="text-right">
+								<i class="fas fa-fw fa-user-check"></i>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr *ngFor="let r of data.records" (click)="edit(r)" style="height: 30pt">
 							<td>{{r.date | date:"dd.MM.yyyy"}}</td>
 							<td>{{data.participants[r.pId]?.name}} ({{r.pId}})</td>
-							<td>
-								<span *ngIf="r.presence == 0" class="fas fa-minus" style="color: red"></span>
-								<span *ngIf="r.presence == 1" class="fas fa-check" style="color: green"></span>
-								<span *ngIf="r.presence == 2" class="fas fa-comment" style="color: rgb(194, 194, 0)"></span>
+							<td class="text-right">
+								<i *ngIf="r.presence == 0" class="fas fa-fw fa-minus" style="color: red"></i>
+								<i *ngIf="r.presence == 1" class="fas fa-fw fa-check" style="color: green"></i>
+								<i *ngIf="r.presence == 2" class="fas fa-fw fa-comment" style="color: rgb(194, 194, 0)"></i>
 							</td>
 						</tr>
 					</tbody>

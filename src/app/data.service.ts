@@ -13,19 +13,37 @@ export interface LocalPresenceRecord {
 	date: string,
 	pId: number,
 	presence: number,
-	synced?: boolean
+	synced?: boolean,
+	covid19Tested?: boolean
 }
 
 export interface LocalParticipantRecord {
 	id?: number, // local ID
 	pId: number, // remote participant ID
-	name?: string
+	name?: string,
+
+	chargePayedAt?: string,
+	healthDeclared?: number, // 0/1
+	covid19Vac?: number // 0: none, 1: vaccinated/recovered
 }
 
 interface ApiLoginResponse {
 	code?: number,
 	user?: string,
 	ciphertest?: string
+}
+
+interface ApiSeason {
+	id?: number;
+	name?: string;
+	begin?: string;
+	begin2?: string;
+	end?: string;
+	changedBy?: string;
+	changedAt?: string;
+	data_enc?: string;
+	data?: {
+	};
 }
 
 interface ApiParticipant {
@@ -37,6 +55,25 @@ interface ApiParticipant {
 		lastName: string;
 		firstName: string;
 	};
+}
+
+interface ApiCourseParticipant {
+	sId?: number,
+	cId?: number,
+	pId?: number,
+	//instructor: number,
+	//charge: charge,
+	chargePayedAt?: string,
+	//familyDiscount: 0,
+	//status: number,
+	//passSent: 0,
+	data?: {
+		healthDeclared?: number, // 0/1
+		covid19Vac?: number // 0: none, 1: vaccinated/recovered
+	}
+	changedBy?: string;
+	changedAt?: string;
+	data_enc?: string;
 }
 
 const ciphertestPlaintext = "1234567890";
@@ -71,6 +108,8 @@ export class DataService
 	private db = new LocalDatabase();
 	public records: Array<LocalPresenceRecord> = [];
 	public participants: Record<number, LocalParticipantRecord> = {};
+	public seasonId = NaN;
+	public seasonName = "";
 
 	uploadSuccessCount = 0;
 	uploadErrorCount = 0;
@@ -86,6 +125,14 @@ export class DataService
 		if (typeof dkh === "string") {
 			this.dataKeyHash = dkh;
 			this.needDataKey = false;
+		}
+		const seasonId = localStorage.getItem("seasonId");
+		if (typeof seasonId === "string") {
+			this.seasonId = parseInt(seasonId);
+		}
+		const seasonName = localStorage.getItem("seasonName");
+		if (typeof seasonName === "string") {
+			this.seasonName = seasonName;
 		}
 		this.checkLogin();
 		this.swUpdate.available.subscribe((event) => {
@@ -232,33 +279,84 @@ export class DataService
 		return plaintext;
 	}
 
-	updateParticipants(): Observable<any>
+	updateParticipants(): Observable<void>
 	{
-		const result = this.http.get(environment.apiBase + '/db/participants?an=' + environment.appName + '&av=' + environment.version);
-		result.subscribe(async (data) => {
-			await this.db.participants.clear();
-			this.participants = {};
-			const apiResponse = <ApiParticipant[]> data;
-			apiResponse.forEach((ap) => {
-				if (ap.data_enc && ap.id) {
-					try {
-						ap.data = JSON.parse(this.decrypt(ap.data_enc));
-						if (ap.data) {
-							const lp: LocalParticipantRecord = {
-								pId: ap.id,
-								name: ap.data.firstName + " " + ap.data.lastName
+		const result = new Observable<void>((subscriber) => {
+			const participants = this.http.get(environment.apiBase + '/db/participants?an=' + environment.appName + '&av=' + environment.version);
+			participants.subscribe(async (data) => {
+				await this.db.participants.clear();
+				this.participants = {};
+				const apiResponse = <ApiParticipant[]> data;
+				apiResponse.forEach((ap) => {
+					if (ap.data_enc && ap.id) {
+						try {
+							ap.data = JSON.parse(this.decrypt(ap.data_enc));
+							if (ap.data) {
+								const lp: LocalParticipantRecord = {
+									pId: ap.id,
+									name: ap.data.firstName + " " + ap.data.lastName
+								}
+								this.db.participants.put(lp, ap.id);
+								this.participants[lp.pId] = lp;
 							}
-							this.db.participants.put(lp, ap.id);
-							this.participants[lp.pId] = lp;
+						} catch (e) {
+							console.error("Error decrypting/parsing participant data", e);
 						}
-					} catch (e) {
-						console.error("Error decrypting/parsing participant data", e);
 					}
-				}
+				});
+
+				// get season
+				const seasons = this.http.get(environment.apiBase + '/db/seasons?an=' + environment.appName + '&av=' + environment.version);
+				seasons.subscribe(async (data) => {
+					const apiResponse = <ApiSeason[]> data;
+					let now = new Date();
+					for (let i = 0; i < apiResponse.length; i++) {
+						if (now <= new Date(apiResponse[i].end || "1970-01-01")) { // assuming chronological entries
+							this.seasonId = apiResponse[i].id || 0;
+							this.seasonName = apiResponse[i].name || "Unbekannt";
+							break;
+						}
+					}
+					console.info("Current season", this.seasonId, this.seasonName);
+					localStorage.setItem("seasonId", String(this.seasonId));
+					localStorage.setItem("seasonName", this.seasonName);
+
+					// get courseparticipants
+					const courseparticipants = this.http.get(environment.apiBase + '/db/courseparticipants?sId=' + this.seasonId + '&an=' + environment.appName + '&av=' + environment.version);
+					courseparticipants.subscribe(async (data) => {
+						const apiResponse = <ApiCourseParticipant[]> data;
+						apiResponse.forEach((ap) => {
+							if (ap.data_enc && ap.pId) {
+								const lp = this.participants[ap.pId];
+								lp.chargePayedAt = lp.chargePayedAt || ap.chargePayedAt;
+								try {
+									ap.data = JSON.parse(this.decrypt(ap.data_enc));
+									if (ap.data) {
+										lp.healthDeclared = lp.healthDeclared || ap.data.healthDeclared;
+										lp.covid19Vac = lp.covid19Vac || ap.data.covid19Vac;
+									}
+								} catch (e) {
+									console.error("Error decrypting/parsing participant data", e);
+								}
+								this.db.participants.put(lp, lp.id);
+							}
+						});
+						subscriber.next();
+						
+					}, (error) => {
+						console.error(error);
+						subscriber.next();
+					});
+
+				}, (error) => {
+					console.error(error);
+					subscriber.next();
+				});
+				
+			}, (error) => {
+				console.error(error);
+				subscriber.next();
 			});
-			
-		}, (error) => {
-			console.error(error);
 		});
 		return result;
 	}
@@ -274,16 +372,42 @@ export class DataService
 		const result = new Observable<void>((subscriber) => {
 			if (this.records.length > 0) {
 				this.records.forEach((r) => {
+					let dataReady = false;
+					let data_enc: string | null = null;
+					if (r.covid19Tested != undefined) {
+						if (!this.needDataKey) {
+							let data = {
+								covid19Tested: r.covid19Tested
+							}
+							try {
+								data_enc = this.encrypt(JSON.stringify(data));
+								dataReady = true;
+							} catch (e) {
+								console.error("Cannot encrypt presence record", e);
+							}
+						} else {
+							console.warn("Cannot upload record due to missing data key");
+						}
+					} else {
+						dataReady = true;
+					}
+					
 					let body = {
 						date: r.date,
 						pId: r.pId,
-						presence: r.presence
+						presence: r.presence,
+						data_enc: data_enc
 					}
 					this.http.post(environment.apiBase + '/presence?an=' + environment.appName + '&av=' + environment.version, body).subscribe(
 						async (response) => {
 							// success
-							r.synced = true;
-							this.uploadSuccessCount += 1;
+							r.synced = dataReady;
+							if (dataReady) {
+								this.uploadSuccessCount += 1;
+							} else {
+								this.uploadErrorCount += 1;
+							}
+							
 							if (this.uploadSuccessCount + this.uploadErrorCount == this.records.length) {
 								await this.processUploadDone();
 								subscriber.next();

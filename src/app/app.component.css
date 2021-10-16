@@ -49,3 +49,15 @@
     -webkit-animation: fadeoutred 3000ms;
     animation-fill-mode: forwards;
 }
+
+.no {
+    color: #e30613;
+}
+
+.yes {
+    color: green;
+}
+
+.unknown {
+    color: #bbb;
+}
