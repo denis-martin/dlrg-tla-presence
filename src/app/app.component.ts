@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { BarcodeFormat } from '@zxing/library';
+import { ZXingScannerComponent } from '@zxing/ngx-scanner';
 
 import { DataService, LocalPresenceRecord } from './data.service';
 import { ModalAuthComponent } from './modals/modal-auth/modal-auth.component';
@@ -30,6 +32,15 @@ export class AppComponent
 	syncModal?: NgbModalRef;
 
 	notificationSound: any;
+
+	qrCodeMode = false;
+	allowedCodeFormats = [ BarcodeFormat.QR_CODE ];
+	
+	@ViewChild('qrscanner', { static: false })
+	qrscanner!: ZXingScannerComponent;
+	cameraPermitted?: boolean;
+	cameras?: MediaDeviceInfo[];
+	pIdLastScanned = 0;
 
 	constructor (public data: DataService, private modalService: NgbModal)
 	{
@@ -197,5 +208,71 @@ export class AppComponent
 			'unknown': !!this.name && this.data.records.length > 0 && this.data.participants[this.data.records[0].pId]?.covid19Vac == undefined
 		}
 		return result;
+	}
+
+	toggleQrcodeMode(): void
+	{
+		this.qrCodeMode = !this.qrCodeMode;
+		if (!this.qrCodeMode) {
+			this.refocus();
+		}
+	}
+
+	qrCodeCamerasFound(videoDrivers: MediaDeviceInfo[]): void
+	{
+		console.info("qrCodeCamerasFound", videoDrivers);
+		this.cameras = videoDrivers;
+	}
+
+	qrCodeNoCamerasFound(): void
+	{
+		console.error("qrCodeNoCamerasFound");
+		this.cameras = [];
+	}
+
+	qrCodePermissionResponse(permitted: boolean): void
+	{
+		console.info("qrCodePermissionResponse", permitted);
+		this.cameraPermitted = permitted;
+	}
+
+	qrCodeScanSuccess(event: string): void
+	{
+		console.info("qrCodeScanSuccess", event);
+		const pId = parseInt(event);
+		if (pId != NaN && pId in this.data.participants) {
+			if (this.pIdLastScanned != pId) {
+				this.pId = pId;
+				this.submit();
+				this.pIdLastScanned = pId;
+			}
+		}
+	}
+
+	qrCodeScanError(event: any): void
+	{
+		console.error("qrCodeScanError", event);
+	}
+
+	cycleCamera(): void
+	{
+		let currentDevice = this.qrscanner.device;
+		if (!currentDevice || !this.cameras || this.cameras.length < 2) {
+			return;
+		}
+		let i = 0;
+		for (let d of this.cameras) {
+			if (d.deviceId == currentDevice.deviceId) {
+				break;
+			}
+			i += 1;
+		}
+		if (i < this.cameras.length) {
+			i = (i + 1) % this.cameras.length;
+			this.qrscanner.device = this.cameras[i];
+			console.info("Changing from camera device", currentDevice.deviceId, "to device", this.cameras[i].deviceId);
+		} else {
+			console.error("Current device not found in our camera list!", currentDevice, this.cameras);
+		}
 	}
 }

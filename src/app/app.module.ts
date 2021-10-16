@@ -5,6 +5,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
+import { ZXingScannerModule } from '@zxing/ngx-scanner';
+
 import { AppComponent } from './app.component';
 import { DataService } from './data.service';
 
@@ -31,6 +33,7 @@ import { ModalSyncComponent } from './modals/modal-sync/modal-sync.component';
     }),
     HttpClientModule,
     NgbModule,
+    ZXingScannerModule,
   ],
   providers: [DataService],
   bootstrap: [AppComponent]

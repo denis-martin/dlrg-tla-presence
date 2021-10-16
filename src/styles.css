@@ -23,6 +23,16 @@ body {
 	cursor: pointer;
 }
 
+@media screen and (max-width: 449.98px) {
+	.logo {
+		height: 24pt;
+	}
+
+	.navbar-button {
+		font-size: 125%;
+	}
+}
+
 @media screen and (max-width: 383.98px) {
 	.logo {
 		height: 20pt;
@@ -53,4 +63,8 @@ body {
 }
 @keyframes spin { 
 	100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); } 
+}
+
+.pointer {
+	cursor: pointer;
 }

@@ -2,8 +2,13 @@
 	<div class="navbar-brand">
 		<img src="assets/images/logo.svg" class="logo">
 	</div>
-	<div class="navbar-item mr-1" (click)="prepareSync()">
-		<span class="navbar-button"><i class="fas fa-sync"></i></span>
+	<div class="navbar-item">
+	</div>
+	<div class="navbar-item ml-auto pr-3" (click)="prepareSync()">
+		<span class="navbar-button"><i class="fas fa-fw fa-sync"></i></span>
+	</div>
+	<div class="navbar-item pl-3 pr-3" (click)="toggleQrcodeMode()">
+		<span class="navbar-button"><i class="fas fa-fw fa-qrcode"></i></span>
 	</div>
 </nav>
 <div class="container">
@@ -17,8 +22,8 @@
 				</div>
 			</div>
 		</div>
-		<div class="row pb-3">
-			<div class="col-sm-12">
+		<div class="row">
+			<div class="col-md-5 mb-3">
 				<div class="btn-group btn-group-toggle" style="width: 100%" ngbRadioGroup name="radioBasic" [(ngModel)]="presence">
 					<label ngbButtonLabel class="btn-secondary">
 						<input ngbButton type="radio" [value]="1"> Anwesend
@@ -28,16 +33,9 @@
 					</label>
 				</div>
 			</div>
-		</div>
-		<div class="row pb-3">
-			<div class="col-sm-4 mb-3">
-				<!-- <label for="pId">Teilnehmernummer:</label><br> -->
-				<input type="number" id="pId" name="pId" placeholder="Teilnehmernummer" class="form-control" 
-					[(ngModel)]="pId" (blur)="refocus()" (keydown)="keyEvent($event)"> <!-- ng-keydown="keyEvent($event)" ng-blur="refocus()" /> -->
-			</div>
-			<div class="col-sm-8 mb-1">
+			<div class="col-md-7 mb-3">
 				<!-- <label for="name">Name:</label><br> -->
-				<div class="input-group mb-3">
+				<div class="input-group">
 					<div id="name" class="form-control" [ngClass]="{'fadeoutgreen': doFadeGreen, 'fadeoutyellow': doFadeYellow, 'fadeoutred': doFadeRed}">
 						{{name}}
 					</div>
@@ -51,6 +49,47 @@
 					</div>
 				</div>
 			</div>
+		</div>
+		<div class="row pb-3">
+			<div class="col-sm-12">
+				<div *ngIf="!qrCodeMode">
+					<!-- <label for="pId">Teilnehmernummer:</label><br> -->
+					<input type="number" id="pId" name="pId" placeholder="Teilnehmernummer" class="form-control" 
+						[(ngModel)]="pId" (blur)="refocus()" (keydown)="keyEvent($event)"> <!-- ng-keydown="keyEvent($event)" ng-blur="refocus()" /> -->
+				</div>
+				<div *ngIf="qrCodeMode">
+					<div *ngIf="cameraPermitted == false">
+						Fehlende Kameraberechtigung.
+						Bitte erlaube die Nutzung der Kamera.
+					</div>
+					<div *ngIf="cameras != undefined && cameras.length == 0">
+						Keine Kameras gefunden.
+					</div>
+					<div *ngIf="cameraPermitted != false" class="mr-auto ml-auto">
+						<table>
+							<tbody>
+								<td style="width: 13%"></td>
+								<td style="width: 74%">
+									<zxing-scanner #qrscanner
+										[formats]="allowedCodeFormats"
+										(camerasFound)="qrCodeCamerasFound($event)"
+										(camerasNotFound)="qrCodeNoCamerasFound()"
+										(permissionResponse)="qrCodePermissionResponse($event)"
+										(scanSuccess)="qrCodeScanSuccess($event)"
+										(scanError)="qrCodeScanError($event)">
+									</zxing-scanner>
+								</td>
+								<td style="width: 13%">
+									<div (click)="cycleCamera()" title="Nächste Kamera auswählen" class="pointer" *ngIf="this.cameras && this.cameras.length > 1">
+										<i class="fas fa-fw fa-redo-alt" style="font-size: 140%"></i>
+									</div>
+								</td>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			
 		</div>
 		<div class="row">
 			<div class="col-sm-12">
